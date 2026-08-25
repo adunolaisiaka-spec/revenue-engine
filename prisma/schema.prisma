@@ -1,0 +1,274 @@
+// Revenue Engine — Prisma schema
+// MVP models (Phases 1-3) are active below. Stripe fields (Phase 4) and
+// ResearchBrief (Phase 5) are included but noted as not yet wired into
+// app logic until their respective phase — see ~/.claude/plans/i-want-to-build-dreamy-yeti.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Core tenancy ----------
+
+model Organization {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  clerkOrgId String   @unique
+
+  // Phase 4 — Stripe billing. Nullable until a customer subscribes;
+  // orgs default to MANUAL (invoiced outside the app) until then.
+  planTier           PlanTier @default(MANUAL)
+  stripeCustomerId   String?  @unique
+  stripeSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships    Membership[]
+  pipelineStages PipelineStage[]
+  companies      Company[]
+  contacts       Contact[]
+  deals          Deal[]
+  activities     Activity[]
+  researchBriefs ResearchBrief[]
+}
+
+enum PlanTier {
+  MANUAL // onboarded outside Stripe (Phase 1-3 default)
+  STARTER
+  GROWTH
+}
+
+model User {
+  id          String   @id @default(cuid())
+  clerkUserId String   @unique
+  email       String   @unique
+  name        String?
+  avatarUrl   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships       Membership[]
+  ownedDeals        Deal[]          @relation("DealOwner")
+  createdCompanies  Company[]       @relation("CompanyCreatedBy")
+  createdContacts   Contact[]       @relation("ContactCreatedBy")
+  activities        Activity[]      @relation("ActivityAuthor")
+  requestedResearch ResearchBrief[] @relation("ResearchRequestedBy")
+}
+
+enum MembershipRole {
+  ADMIN
+  REP
+}
+
+model Membership {
+  id             String         @id @default(cuid())
+  organizationId String
+  userId         String
+  role           MembershipRole @default(REP)
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+}
+
+// ---------- Pipeline ----------
+
+model PipelineStage {
+  id             String  @id @default(cuid())
+  organizationId String
+  name           String
+  order          Int
+  isWon          Boolean @default(false)
+  isLost         Boolean @default(false)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deals        Deal[]
+
+  @@unique([organizationId, order])
+  @@index([organizationId])
+}
+
+// ---------- CRM records ----------
+
+model Company {
+  id             String  @id @default(cuid())
+  organizationId String
+  name           String
+  domain         String?
+  industry       String?
+  sizeRange      String?
+  description    String?
+  createdByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User?           @relation("CompanyCreatedBy", fields: [createdByUserId], references: [id])
+  contacts       Contact[]
+  deals          Deal[]
+  activities     Activity[]
+  researchBriefs ResearchBrief[]
+
+  @@index([organizationId])
+}
+
+model Contact {
+  id              String  @id @default(cuid())
+  organizationId  String
+  companyId       String?
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  title           String?
+  createdByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company       Company?     @relation(fields: [companyId], references: [id])
+  createdBy     User?        @relation("ContactCreatedBy", fields: [createdByUserId], references: [id])
+  activities    Activity[]
+  primaryOnDeals Deal[]      @relation("DealPrimaryContact")
+
+  @@index([organizationId])
+  @@index([companyId])
+}
+
+enum DealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+model Deal {
+  id                String     @id @default(cuid())
+  organizationId    String
+  companyId         String
+  primaryContactId  String?
+  title             String
+  value             Decimal    @default(0)
+  currency          String     @default("USD")
+  stageId           String
+  ownerUserId       String
+  status            DealStatus @default(OPEN)
+  expectedCloseDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company        Company       @relation(fields: [companyId], references: [id])
+  primaryContact Contact?      @relation("DealPrimaryContact", fields: [primaryContactId], references: [id])
+  stage          PipelineStage @relation(fields: [stageId], references: [id])
+  owner          User          @relation("DealOwner", fields: [ownerUserId], references: [id])
+  activities     Activity[]
+
+  @@index([organizationId])
+  @@index([stageId])
+  @@index([companyId])
+}
+
+enum ActivityType {
+  NOTE
+  CALL
+  EMAIL
+  MEETING
+  STAGE_CHANGE
+  SYSTEM
+}
+
+model Activity {
+  id             String       @id @default(cuid())
+  organizationId String
+  type           ActivityType
+  body           String?
+
+  dealId    String?
+  contactId String?
+  companyId String?
+
+  authorUserId String?
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deal         Deal?        @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  contact      Contact?     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  author       User?        @relation("ActivityAuthor", fields: [authorUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([dealId])
+  @@index([contactId])
+  @@index([companyId])
+}
+
+// ---------- Research (Phase 5) ----------
+
+enum ResearchSubjectType {
+  COMPANY
+  MARKET
+}
+
+enum ResearchKind {
+  SNAPSHOT
+  DEEP_DIVE
+}
+
+enum ResearchStatus {
+  PENDING
+  RUNNING
+  COMPLETE
+  FAILED
+}
+
+enum ResearchTrigger {
+  AUTO
+  MANUAL
+}
+
+model ResearchBrief {
+  id             String  @id @default(cuid())
+  organizationId String
+  subjectType    ResearchSubjectType
+  companyId      String?
+  marketQuery    String?
+
+  kind    ResearchKind
+  version Int
+  status  ResearchStatus @default(PENDING)
+
+  // Structured content: { summary, keyFindings[], financials, leadership[],
+  // recentNews[], competitors[], marketAnalysis, talkingPoints[], sources[] }
+  content Json?
+
+  markdownUrl String?
+  pdfUrl      String?
+
+  requestedByUserId String?
+  triggeredBy       ResearchTrigger
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  requestedBy  User?        @relation("ResearchRequestedBy", fields: [requestedByUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([companyId])
+  @@index([organizationId, subjectType, kind, status])
+}
