@@ -48,7 +48,7 @@ export default async function MarketResearchPage({
               <Link
                 key={p.marketQuery}
                 href={`/research/market?q=${encodeURIComponent(p.marketQuery!)}`}
-                className="rounded-full border px-3 py-1 text-xs text-muted-foreground hover:bg-muted/50"
+                className="rounded-full border px-3 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/50"
               >
                 {p.marketQuery}
               </Link>

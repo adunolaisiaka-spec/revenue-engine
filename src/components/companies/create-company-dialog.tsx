@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createCompanyAction } from "@/server/actions/companies";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,10 +25,15 @@ export function CreateCompanyDialog() {
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
-      await createCompanyAction(formData);
-      formRef.current?.reset();
-      setOpen(false);
-      router.refresh();
+      try {
+        await createCompanyAction(formData);
+        formRef.current?.reset();
+        setOpen(false);
+        router.refresh();
+        toast.success("Company created");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to create company");
+      }
     });
   }
 

@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { updateDealStageAction } from "@/server/actions/deals";
 import {
   Select,
@@ -26,8 +27,12 @@ export function DealStageSelect({
   function handleChange(newStageId: string | null) {
     if (!newStageId) return;
     startTransition(async () => {
-      await updateDealStageAction(dealId, newStageId);
-      router.refresh();
+      try {
+        await updateDealStageAction(dealId, newStageId);
+        router.refresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to change stage");
+      }
     });
   }
 

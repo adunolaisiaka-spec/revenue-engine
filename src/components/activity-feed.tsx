@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useTransition } from "react";
+import { toast } from "sonner";
 import { logActivityAction } from "@/server/actions/activities";
 import type { ActivityScope } from "@/server/queries/activities";
 import { Button } from "@/components/ui/button";
@@ -28,8 +29,12 @@ export function ActivityFeed({
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
-      await logActivityAction(scope, revalidatePathTarget, formData);
-      formRef.current?.reset();
+      try {
+        await logActivityAction(scope, revalidatePathTarget, formData);
+        formRef.current?.reset();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to post note");
+      }
     });
   }
 

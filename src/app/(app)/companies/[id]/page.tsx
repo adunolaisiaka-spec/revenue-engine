@@ -42,7 +42,7 @@ export default async function CompanyDetailPage({
   const deepDives = researchBriefs.filter((b) => b.kind === "DEEP_DIVE").map(toSummary);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-6">
+    <div className="flex flex-1 flex-col gap-6 p-6">
       <div>
         <h1 className="text-xl font-semibold">{company.name}</h1>
         <p className="text-sm text-muted-foreground">
@@ -52,7 +52,7 @@ export default async function CompanyDetailPage({
       </div>
 
       <Tabs defaultValue="overview">
-        <TabsList>
+        <TabsList className="max-w-full overflow-x-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
           <TabsTrigger value="deals">Deals</TabsTrigger>
@@ -76,7 +76,7 @@ export default async function CompanyDetailPage({
             <Link
               key={contact.id}
               href={`/contacts/${contact.id}`}
-              className="rounded-lg border p-3 text-sm hover:bg-muted/50"
+              className="rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50"
             >
               <span className="font-medium">
                 {contact.firstName} {contact.lastName}
@@ -103,7 +103,7 @@ export default async function CompanyDetailPage({
             <Link
               key={deal.id}
               href={`/deals/${deal.id}`}
-              className="flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-muted/50"
+              className="flex items-center justify-between rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50"
             >
               <span className="font-medium">{deal.title}</span>
               <div className="flex items-center gap-2">

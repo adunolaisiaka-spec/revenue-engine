@@ -1,15 +1,8 @@
-import Link from "next/link";
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 import { requireOrgContext } from "@/server/auth";
-
-const NAV_LINKS = [
-  { href: "/pipeline", label: "Pipeline" },
-  { href: "/companies", label: "Companies" },
-  { href: "/contacts", label: "Contacts" },
-  { href: "/research/market", label: "Market Research" },
-  { href: "/settings/team", label: "Team" },
-  { href: "/settings/billing", label: "Billing" },
-];
+import { ThemeToggle } from "@/components/theme-toggle";
+import { AppNav } from "@/components/app-nav";
+import { MobileNav } from "@/components/mobile-nav";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   // Every route under (app) is org-scoped. This also acts as the guard: it
@@ -19,20 +12,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="flex items-center justify-between border-b border-black/8 px-6 py-3 dark:border-white/[.145]">
+      <header className="flex items-center justify-between border-b border-border bg-background/80 px-6 py-3 backdrop-blur-sm">
         <div className="flex items-center gap-6">
-          <Link href="/" className="font-semibold">
-            Revenue Engine
-          </Link>
-          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-            {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-foreground">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <MobileNav />
+          <span className="font-semibold">Revenue Engine</span>
+          <AppNav />
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           <OrganizationSwitcher afterSelectOrganizationUrl="/pipeline" />
           <UserButton />
         </div>

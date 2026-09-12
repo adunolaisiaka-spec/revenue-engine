@@ -20,7 +20,7 @@ export default async function ContactsPage() {
   ]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-6">
+    <div className="flex flex-1 flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Contacts</h1>
         <CreateContactDialog companies={companies.map((c) => ({ id: c.id, name: c.name }))} />

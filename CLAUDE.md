@@ -78,6 +78,8 @@ Log recurring issues and their fixes here so they don't get re-solved from scrat
 - **Clerk "Core 3" (released 2026-03-03) removed `<SignedIn>`/`<SignedOut>`/`<Protect>`** from `@clerk/nextjs` — replaced by a single `<Show when="signed-in">` / `<Show when="signed-out">` / `<Show when={{role:...}}>` component. Old Clerk examples using the removed components will throw at build time.
 - **shadcn/ui's Base UI `Select` doesn't auto-derive the trigger label from `SelectItem` children** the way Radix's did — pass an `items={[{value, label}]}` array to `<Select items={...}>` or the trigger displays the raw value (e.g. a database id) instead of the human-readable label.
 - **shadcn `init -d` can write a self-referential `--font-sans: var(--font-sans)` into `globals.css`**, breaking font loading under Tailwind v4 (`@theme inline` resolves at parse time, not runtime). Fix: use literal font-family strings (`"Geist", "Geist Fallback", ...`) instead of `var(...)`, and keep the `next/font` variable classNames on `<html>`, not `<body>`.
+- **`next-pwa`/`@ducanh2912/next-pwa` don't work with Turbopack** (Next 16's default bundler) — they inject a service worker via a webpack plugin (`config.webpack = ...` in `next.config.ts`), which Turbopack never executes, so the plugin silently no-ops. PWA support (`public/manifest.json`, `public/sw.js`, registration) is hand-rolled instead: cache-first for `/_next/static/*` and image/font assets, network-only for everything else (pages/API), registered from `src/components/service-worker-registration.tsx`.
+- **`src/proxy.ts`'s static-file bypass regex deliberately excludes `.json`** (via a `js(?!on)` negative lookahead, so `.json` "API-like" paths still go through Clerk's `auth.protect()`). This silently 404s any real public `.json` file for signed-out visitors — `/manifest.json` had to be added to the explicit `isPublicRoute` list rather than relying on the extension bypass.
 
 ## Optimization Backlog
 
@@ -91,3 +93,13 @@ Log recurring issues and their fixes here so they don't get re-solved from scrat
 
 ---
 *Keep this file current — when you add a workflow, tool, or fix a gnarly bug, note it here.*
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

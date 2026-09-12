@@ -6,8 +6,8 @@ import { OrganizationList } from "@clerk/nextjs";
 // org or pick one they already belong to.
 export default function SelectOrganizationPage() {
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="border-b border-black/8 px-6 py-3 dark:border-white/[.145]">
+    <div className="flex flex-1 flex-col bg-background">
+      <header className="border-b border-border px-6 py-4">
         <Link href="/" className="font-semibold">
           Revenue Engine
         </Link>

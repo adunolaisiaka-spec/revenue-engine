@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createDealAction } from "@/server/actions/deals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,10 +39,15 @@ export function CreateDealDialog({
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
-      await createDealAction(formData);
-      formRef.current?.reset();
-      setOpen(false);
-      router.refresh();
+      try {
+        await createDealAction(formData);
+        formRef.current?.reset();
+        setOpen(false);
+        router.refresh();
+        toast.success("Deal created");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to create deal");
+      }
     });
   }
 

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { inviteTeamMemberAction } from "@/server/actions/team";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +36,15 @@ export function InviteMemberDialog() {
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
-      await inviteTeamMemberAction(formData);
-      formRef.current?.reset();
-      setOpen(false);
-      router.refresh();
+      try {
+        await inviteTeamMemberAction(formData);
+        formRef.current?.reset();
+        setOpen(false);
+        router.refresh();
+        toast.success("Invitation sent");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to send invitation");
+      }
     });
   }
 

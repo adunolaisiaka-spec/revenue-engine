@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createContactAction } from "@/server/actions/contacts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,10 +35,15 @@ export function CreateContactDialog({
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
-      await createContactAction(formData);
-      formRef.current?.reset();
-      setOpen(false);
-      router.refresh();
+      try {
+        await createContactAction(formData);
+        formRef.current?.reset();
+        setOpen(false);
+        router.refresh();
+        toast.success("Contact created");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to create contact");
+      }
     });
   }
 

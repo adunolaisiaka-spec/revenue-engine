@@ -48,7 +48,7 @@ export default async function ContactDetailPage({
             <Link
               key={deal.id}
               href={`/deals/${deal.id}`}
-              className="flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-muted/50"
+              className="flex items-center justify-between rounded-lg border p-3 text-sm transition-colors hover:bg-muted/50"
             >
               <span className="font-medium">{deal.title}</span>
               <Badge variant="secondary">{deal.stage.name}</Badge>

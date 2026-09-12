@@ -3,15 +3,11 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@/server/db";
-import type { MembershipRole } from "@prisma/client";
+import { mapClerkRole } from "@/server/clerk-role";
 
 // The only sync path from Clerk (source of truth for auth/org/membership)
 // into our Postgres mirror tables. Every handler is an upsert keyed on the
 // Clerk id so redelivered/out-of-order webhook events stay idempotent.
-
-function mapClerkRole(clerkRole: string): MembershipRole {
-  return clerkRole === "org:admin" ? "ADMIN" : "REP";
-}
 
 const DEFAULT_PIPELINE_STAGES = [
   { name: "New", order: 0 },

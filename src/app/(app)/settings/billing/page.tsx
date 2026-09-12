@@ -1,7 +1,7 @@
 import { requireOrgContext } from "@/server/auth";
 import { db } from "@/server/db";
 import { createBillingPortalSessionAction, createCheckoutSessionAction } from "@/server/actions/billing";
-import { Button } from "@/components/ui/button";
+import { BillingActionButton } from "@/components/billing/billing-action-button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -59,11 +59,12 @@ export default async function BillingSettingsPage({
               </CardHeader>
               <CardContent />
               <CardFooter>
-                <form action={createCheckoutSessionAction.bind(null, plan.tier)}>
-                  <Button type="submit" disabled={org.planTier === plan.tier}>
-                    {org.planTier === plan.tier ? "Current plan" : `Upgrade to ${plan.name}`}
-                  </Button>
-                </form>
+                <BillingActionButton
+                  action={createCheckoutSessionAction.bind(null, plan.tier)}
+                  disabled={org.planTier === plan.tier}
+                >
+                  {org.planTier === plan.tier ? "Current plan" : `Upgrade to ${plan.name}`}
+                </BillingActionButton>
               </CardFooter>
             </Card>
           ))}
@@ -71,11 +72,9 @@ export default async function BillingSettingsPage({
       )}
 
       {isAdmin && hasBillingAccount && (
-        <form action={createBillingPortalSessionAction}>
-          <Button type="submit" variant="outline">
-            Manage billing
-          </Button>
-        </form>
+        <BillingActionButton action={createBillingPortalSessionAction} variant="outline">
+          Manage billing
+        </BillingActionButton>
       )}
     </div>
   );
