@@ -21,7 +21,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <div className="flex min-h-full flex-1 flex-col">
       <header className="flex items-center justify-between border-b border-black/8 px-6 py-3 dark:border-white/[.145]">
         <div className="flex items-center gap-6">
-          <span className="font-semibold">Revenue Engine</span>
+          <Link href="/" className="font-semibold">
+            Revenue Engine
+          </Link>
           <nav className="flex items-center gap-4 text-sm text-muted-foreground">
             {NAV_LINKS.map((link) => (
               <Link key={link.href} href={link.href} className="hover:text-foreground">
